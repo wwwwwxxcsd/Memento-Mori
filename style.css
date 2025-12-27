@@ -1,0 +1,136 @@
+﻿@font-face {
+    font-family: 'Calligrapher';
+    src: url('font/Calligrapher_Regular.ttf') format('truetype');
+}
+
+.grain-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+    opacity: 0.15;
+    z-index: 2000;
+    pointer-events: none;
+    animation: dust-fly 15s linear infinite;
+}
+
+@keyframes dust-fly {
+    0% { transform: translate(-10%, 10%); }
+    100% { transform: translate(10%, -10%); }
+}
+
+body {
+    margin: 0; padding: 0;
+    font-family: 'Calligrapher', sans-serif;
+    color: #ccc;
+    background: url('img/background.png') no-repeat center center fixed;
+    background-size: cover;
+    height: 100vh;
+    display: block; /* Змінено з flex на block для стабільності */
+    overflow: hidden;
+}
+
+.background-dim {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.65);
+    z-index: -1;
+}
+
+header {
+    position: fixed; /* Фіксуємо зверху */
+    top: 0; left: 0; width: 100%;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+header h1 { margin: 0; font-size: 22px; letter-spacing: 2px; }
+
+/* ГОЛОВНИЙ ЕКРАН */
+#mainLayout {
+    display: none;
+    height: calc(100vh - 90px); /* Висота екрана мінус хедер і футер */
+    margin-top: 50px; /* Відступ під хедер */
+    grid-template-columns: 20px 280px 1fr 280px 20px;
+    grid-template-rows: 1fr 1fr;
+    align-items: center;
+}
+
+#mainLayout.visible { display: grid; }
+
+.side-card {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #444;
+    padding: 12px;
+    width: 250px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    justify-self: center;
+}
+
+.card-left-top { grid-column: 2; grid-row: 1; align-self: center; }
+.card-left-bottom { grid-column: 2; grid-row: 2; align-self: center; }
+.card-right-top { grid-column: 4; grid-row: 1; align-self: center; }
+.card-right-bottom { grid-column: 4; grid-row: 2; align-self: center; }
+
+.side-card img { width: 100%; height: auto; filter: grayscale(30%); }
+.side-card p { margin: 10px 0 0; font-size: 16px; color: #999; }
+
+.central-container {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: start;
+    margin-top: 80px;
+    margin-left: 60px;
+    justify-self: start;
+    width: 480px;
+    background: rgba(10, 10, 10, 0.9);
+    padding: 30px;
+    border: 1px solid #555;
+    z-index: 10;
+}
+
+#display { font-size: 22px; line-height: 1.4; color: #555; }
+.typed { color: #ddd; }
+.current { color: #000; background: #eee; padding: 0 2px; }
+.error-char { color: #fff; background: #800; }
+
+/* ЕКРАН ВИБОРУ */
+#selectionScreen {
+    position: fixed;
+    inset: 0; background: #000; z-index: 3000;
+    display: flex; justify-content: center; align-items: center;
+}
+.fade-out { opacity: 0; pointer-events: none; transition: 1s; }
+
+.language-switcher { position: absolute; top: 30px; left: 30px; display: flex; gap: 15px; }
+.lang-btn {
+    background: none; border: 1px solid #333; color: #555;
+    padding: 8px 20px; cursor: pointer; font-family: 'Calligrapher';
+    font-size: 18px;
+}
+.lang-btn.active { border-color: #fff; color: #fff; }
+
+.select-btn {
+    width: 80px; height: 80px; background: none; border: 1px solid #444;
+    color: #888; font-size: 30px; cursor: pointer; font-family: 'Calligrapher';
+}
+.select-btn:hover { border-color: #fff; color: #fff; }
+
+#angel-top { position: absolute; top: 30px; right: 40px; width: 280px; opacity: 0.4; pointer-events: none; }
+#angels { position: absolute; bottom: 30px; left: 40px; width: 380px; opacity: 0.4; pointer-events: none; }
+
+footer {
+    position: fixed; /* Фіксуємо знизу жорстко */
+    bottom: 0; left: 0; width: 100%;
+    height: 40px; background: #000; border-top: 1px solid #222;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px;
+    box-sizing: border-box;
+    font-size: 12px;
+    z-index: 100;
+}

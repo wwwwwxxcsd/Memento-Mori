@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Memento mori</title>
+    <link rel="icon" type="image/png" href="ава.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="grain-overlay"></div>
+<div class="background-dim"></div>
+
+<div id="selectionScreen">
+    <div class="language-switcher">
+        <button id="uaBtn" class="lang-btn active" onclick="changeLang('ua')">UA</button>
+        <button id="latBtn" class="lang-btn" onclick="changeLang('lat')">LAT</button>
+    </div>
+    <div style="display: flex; gap: 20px;">
+        <button class="select-btn" onclick="selectText(1)">1</button>
+        <button class="select-btn" onclick="selectText(2)">2</button>
+        <button class="select-btn" onclick="selectText(3)">3</button>
+        <button class="select-btn" onclick="selectText(4)">4</button>
+        <button class="select-btn" onclick="selectText(5)">5</button>
+    </div>
+    <img src="img/ангел.jpg" id="angel-top">
+    <img src="img/ангелы.png" id="angels">
+</div>
+
+<header>
+    <h1>Memento mori</h1>
+</header>
+
+<main id="mainLayout">
+    <div class="side-card card-left-top">
+        <img src="img/череп.png">
+        <p>Crucifixio Iesu</p>
+    </div>
+    <div class="side-card card-left-bottom">
+        <img src="img/крест.png">
+        <p>Paradisus</p>
+    </div>
+
+    <div class="central-container">
+        <div id="startScreen" style="text-align: center; font-size: 20px;">Натисніть будь-яку клавішу</div>
+        <div id="trainer" style="display:none;">
+            <div id="display"></div>
+            <div id="error" style="margin-top: 15px; color: #a00; font-size: 16px;"></div>
+        </div>
+    </div>
+
+    <div class="side-card card-right-top">
+        <img src="img/вфвф.gif">
+        <p>Nativitas Antichristi</p>
+    </div>
+    <div class="side-card card-right-bottom">
+        <img src="img/sanctus.webp">
+        <p>Sanctus</p>
+    </div>
+</main>
+
+<footer>
+    <p>© 2025 Тренажер друку</p>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span>Гучність</span>
+        <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="0.3">
+    </div>
+</footer>
+
+<audio id="bgMusic" loop><source src="sound/434009514.mp3" type="audio/mpeg"></audio>
+
+<script src="main.js"></script>
+</body>
+</html>
