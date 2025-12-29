@@ -1,10 +1,10 @@
 ﻿const allTexts = {
     ua: {
-        1: "Не вдавайся гріху, і не будь безумний: навіщо тобі вмирати не свого часу. Ек.7,17",
-        2: "Думка про очікуване і день смерті робить у них роздуми та страх серця. Сир.40,2",
-        3: "Не радуйся смерті людини, пам'ятай, що всі ми помремо. Сир.8,8",
-        4: "Коротке і сумне наше життя, і немає людині спасіння від смерті. Прем.2,1",
-        5: "Не бійся смертного вироку: згадай про предків твоїх та нащадків. Сір.41,5"
+        1: "Не вдавайся гріху, і не будь безумний: навіщо тобі вмирати не свого часу.",
+        2: "Думка про очікуване і день смерті робить у них роздуми та страх серця.",
+        3: "Не радуйся смерті людини, пам'ятай, що всі ми помремо.",
+        4: "Коротке і сумне наше життя, і немає людині спасіння від смерті.",
+        5: "Не бійся смертного вироку: згадай про предків твоїх та нащадків."
     },
     lat: {
         1: "Memento mori, nam et tu homo es. Respice post te, hominem te memento.",
@@ -18,6 +18,8 @@
 let currentLang = 'ua';
 let selectedString = "";
 let isStarted = false;
+let startTime = null;
+let totalErrors = 0;
 
 function changeLang(lang) {
     currentLang = lang;
@@ -49,19 +51,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
     vol.addEventListener("input", (e) => audio.volume = e.target.value);
 
-    document.addEventListener("keydown", () => {
+    // ЛОГИКА СКРИМЕРА
+    const antichristiCard = document.getElementById("antichristiCard");
+    const screamerContainer = document.getElementById("screamerContainer");
+    const screamerSound = document.getElementById("screamerSound");
+
+    antichristiCard.addEventListener("click", () => {
+        // Устанавливаем громкость (0.5 - средняя)
+        screamerSound.volume = 0.5;
+
+        // Показываем скример и играем звук
+        screamerContainer.style.display = "flex";
+        screamerSound.play();
+
+        // Убираем через 2 секунды
+        setTimeout(() => {
+            screamerContainer.style.display = "none";
+            screamerSound.pause();
+            screamerSound.currentTime = 0;
+        }, 2000);
+    });
+
+    const initialStarter = (e) => {
         if (selectedString !== "" && !isStarted) {
             document.getElementById("startScreen").style.display = "none";
             document.getElementById("trainer").style.display = "block";
             isStarted = true;
+            startTime = new Date();
+            totalErrors = 0;
             runTrainer();
+            document.removeEventListener("keydown", initialStarter);
         }
-    });
+    };
+    document.addEventListener("keydown", initialStarter);
 
     function runTrainer() {
         let index = 0;
         let isError = false;
+        const container = document.querySelector('.central-container');
         display.innerHTML = "";
+
         const spans = [...selectedString].map(c => {
             const s = document.createElement("span");
             s.textContent = c;
@@ -84,10 +113,28 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!isError && e.key === selectedString[index]) {
                 index++;
                 if (index === selectedString.length) {
-                    errorMsg.innerHTML = 'Finitum. <button onclick="location.reload()" style="color:#fff; background:none; border:1px solid #444; cursor:pointer; padding:5px 10px; font-family:Calligrapher">Renovare</button>';
+                    const endTime = new Date();
+                    const timeDiff = Math.floor((endTime - startTime) / 1000);
+
+                    errorMsg.innerHTML = `
+                        <div class="stats-container">
+                            <p>Час: <span class="stats-val">${timeDiff} сек.</span></p>
+                            <p>Помилок: <span class="stats-val" style="color:#a00">${totalErrors}</span></p>
+                            <button onclick="location.reload()" style="color:#fff; background:none; border:1px solid #444; cursor:pointer; padding:8px 15px; font-family:Calligrapher; margin-top:10px">Renovare (Спробувати ще)</button>
+                        </div>
+                    `;
                     document.removeEventListener("keydown", onKey);
                 }
-            } else { isError = true; }
+            } else {
+                if (!isError) {
+                    totalErrors++;
+                    container.classList.add('shake', 'error-flash');
+                    setTimeout(() => {
+                        container.classList.remove('shake', 'error-flash');
+                    }, 300);
+                }
+                isError = true;
+            }
             redraw();
         };
         document.addEventListener("keydown", onKey);
