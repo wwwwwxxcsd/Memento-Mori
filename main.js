@@ -18,8 +18,8 @@
 let currentLang = 'ua';
 let selectedString = "";
 let isStarted = false;
-let startTime = null;
-let totalErrors = 0;
+let startTime = 0;
+let errorsCount = 0;
 
 function changeLang(lang) {
     currentLang = lang;
@@ -33,7 +33,10 @@ function selectText(num) {
     const layout = document.getElementById("mainLayout");
     const audio = document.getElementById("bgMusic");
 
-    audio.play().catch(() => {});
+    if (audio.paused) {
+        audio.play().catch(() => {});
+    }
+
     screen.classList.add("fade-out");
 
     setTimeout(() => {
@@ -43,100 +46,118 @@ function selectText(num) {
     }, 1000);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const display = document.getElementById("display");
+// Функція для повернення до вибору тексту БЕЗ перезавантаження сторінки
+function resetToSelection() {
+    isStarted = false;
+    selectedString = "";
+
+    const screen = document.getElementById("selectionScreen");
+    const layout = document.getElementById("mainLayout");
+    const startScreen = document.getElementById("startScreen");
+    const trainer = document.getElementById("trainer");
     const errorMsg = document.getElementById("error");
+
+    // Повертаємо початковий вигляд екранів
+    layout.classList.remove("visible");
+    setTimeout(() => {
+        layout.style.display = "none";
+        screen.style.display = "flex";
+        screen.classList.remove("fade-out");
+
+        // Очищуємо робочу область тренажера
+        startScreen.style.display = "block";
+        trainer.style.display = "none";
+        errorMsg.innerHTML = "";
+
+        // Повертаємо слухач для старту
+        document.addEventListener("keydown", startListener);
+    }, 500);
+}
+
+const startListener = (e) => {
+    if (selectedString !== "" && !isStarted) {
+        document.getElementById("startScreen").style.display = "none";
+        document.getElementById("trainer").style.display = "block";
+        isStarted = true;
+        startTime = Date.now();
+        errorsCount = 0;
+        runTrainer();
+        document.removeEventListener("keydown", startListener);
+    }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
     const vol = document.getElementById("volumeRange");
     const audio = document.getElementById("bgMusic");
 
     vol.addEventListener("input", (e) => audio.volume = e.target.value);
+    document.addEventListener("keydown", startListener);
+});
 
-    // ЛОГИКА СКРИМЕРА
-    const antichristiCard = document.getElementById("antichristiCard");
-    const screamerContainer = document.getElementById("screamerContainer");
-    const screamerSound = document.getElementById("screamerSound");
+function runTrainer() {
+    const display = document.getElementById("display");
+    const errorMsg = document.getElementById("error");
+    let index = 0;
+    let hasErrorOnCurrentChar = false;
 
-    antichristiCard.addEventListener("click", () => {
-        // Устанавливаем громкость (0.5 - средняя)
-        screamerSound.volume = 0.5;
-
-        // Показываем скример и играем звук
-        screamerContainer.style.display = "flex";
-        screamerSound.play();
-
-        // Убираем через 2 секунды
-        setTimeout(() => {
-            screamerContainer.style.display = "none";
-            screamerSound.pause();
-            screamerSound.currentTime = 0;
-        }, 2000);
+    display.innerHTML = "";
+    const spans = [...selectedString].map(c => {
+        const s = document.createElement("span");
+        s.textContent = c;
+        display.appendChild(s);
+        return s;
     });
 
-    const initialStarter = (e) => {
-        if (selectedString !== "" && !isStarted) {
-            document.getElementById("startScreen").style.display = "none";
-            document.getElementById("trainer").style.display = "block";
-            isStarted = true;
-            startTime = new Date();
-            totalErrors = 0;
-            runTrainer();
-            document.removeEventListener("keydown", initialStarter);
-        }
-    };
-    document.addEventListener("keydown", initialStarter);
-
-    function runTrainer() {
-        let index = 0;
-        let isError = false;
-        const container = document.querySelector('.central-container');
-        display.innerHTML = "";
-
-        const spans = [...selectedString].map(c => {
-            const s = document.createElement("span");
-            s.textContent = c;
-            display.appendChild(s);
-            return s;
-        });
-
-        const redraw = () => {
-            spans.forEach((s, i) => {
-                s.className = i < index ? "typed" : i === index ? (isError ? "error-char" : "current") : "";
-            });
-        };
-        redraw();
-
-        const onKey = (e) => {
-            if (e.key === "Backspace") { isError = false; redraw(); return; }
-            if (e.key.length !== 1) return;
-            if (e.key === " ") e.preventDefault();
-
-            if (!isError && e.key === selectedString[index]) {
-                index++;
-                if (index === selectedString.length) {
-                    const endTime = new Date();
-                    const timeDiff = Math.floor((endTime - startTime) / 1000);
-
-                    errorMsg.innerHTML = `
-                        <div class="stats-container">
-                            <p>Час: <span class="stats-val">${timeDiff} сек.</span></p>
-                            <p>Помилок: <span class="stats-val" style="color:#a00">${totalErrors}</span></p>
-                            <button onclick="location.reload()" style="color:#fff; background:none; border:1px solid #444; cursor:pointer; padding:8px 15px; font-family:Calligrapher; margin-top:10px">Renovare (Спробувати ще)</button>
-                        </div>
-                    `;
-                    document.removeEventListener("keydown", onKey);
-                }
+    const updateVisuals = () => {
+        spans.forEach((s, i) => {
+            if (i < index) {
+                s.className = "typed";
+            } else if (i === index) {
+                s.className = hasErrorOnCurrentChar ? "error-char" : "current";
             } else {
-                if (!isError) {
-                    totalErrors++;
-                    container.classList.add('shake', 'error-flash');
-                    setTimeout(() => {
-                        container.classList.remove('shake', 'error-flash');
-                    }, 300);
-                }
-                isError = true;
+                s.className = "";
             }
-            redraw();
-        };
-        document.addEventListener("keydown", onKey);
+        });
+    };
+    updateVisuals();
+
+    const onKeyPress = (e) => {
+        if (e.key.length !== 1 && e.key !== "Backspace") return;
+        if (e.key === " ") e.preventDefault();
+
+        if (e.key === "Backspace") {
+            hasErrorOnCurrentChar = false;
+            updateVisuals();
+            return;
+        }
+
+        if (e.key === selectedString[index]) {
+            if (!hasErrorOnCurrentChar) index++;
+            hasErrorOnCurrentChar = false;
+            if (index === selectedString.length) finishSession();
+        } else {
+            if (!hasErrorOnCurrentChar) errorsCount++;
+            hasErrorOnCurrentChar = true;
+        }
+        updateVisuals();
+    };
+
+    function finishSession() {
+        document.removeEventListener("keydown", onKeyPress);
+        const endTime = Date.now();
+        const totalSeconds = Math.floor((endTime - startTime) / 1000);
+        const wpm = Math.round((selectedString.length / 5) / (totalSeconds / 60)) || 0;
+
+        errorMsg.innerHTML = `
+            <div class="stats-box">
+                <p>Статистика проходження:</p>
+                <p>Час: <span>${totalSeconds} сек.</span></p>
+                <p>Помилок: <span style="color:#f44">${errorsCount}</span></p>
+                <p>Швидкість: <span>${wpm} WPM</span></p>
+                <button onclick="resetToSelection()" style="margin-top:15px; background:none; border:1px solid #fff; color:#fff; padding:10px; cursor:pointer; font-family:Calligrapher; font-size:18px;">Renovare</button>
+            </div>
+        `;
     }
-});
+
+    document.addEventListener("keydown", onKeyPress);
+}
